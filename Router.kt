@@ -28,12 +28,13 @@ class Router {
 
     private fun changeFragment(transactionInfo: TransactionInfo) {
         fragmentManager.beginTransaction()
-                .replace(CONTAINER_ID, transactionInfo.fragment, transactionInfo.tag)
                 .apply {
                     if (transactionInfo.saveToBackStack) {
                         addToBackStack(transactionInfo.tag)
                     }
                 }
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                .replace(CONTAINER_ID, transactionInfo.fragment, transactionInfo.tag)
                 .commit()
     }
 }
