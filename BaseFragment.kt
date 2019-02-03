@@ -4,61 +4,78 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.View
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.Subject
 
 open class BaseFragment : Fragment() {
-    protected var attached = false
-    protected var created = false
-    protected var viewCreated = false
-    protected var started = false
-    protected var resumed = false
+
+    enum class State {
+        NONE,
+        ATTACHED,
+        CREATED,
+        VIEW_CREATED,
+        STARTED,
+        RESUMED
+    }
+
+    private val subject: Subject<State> = BehaviorSubject.createDefault(State.NONE)
+
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        attached = true
+        subject.onNext(State.ATTACHED)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        created = true
+        subject.onNext(State.CREATED)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewCreated = true
+        subject.onNext(State.VIEW_CREATED)
     }
 
     override fun onStart() {
         super.onStart()
-        started = true
+        subject.onNext(State.STARTED)
     }
 
     override fun onResume() {
         super.onResume()
-        resumed = true
+        subject.onNext(State.RESUMED)
     }
 
     override fun onPause() {
         super.onPause()
-        resumed = false
+        subject.onNext(State.STARTED)
     }
 
     override fun onStop() {
         super.onStop()
-        started = false
+        subject.onNext(State.VIEW_CREATED)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewCreated = false
+        subject.onNext(State.CREATED)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        created = false
+        subject.onNext(State.ATTACHED)
     }
 
     override fun onDetach() {
         super.onDetach()
-        attached = false
+        subject.onNext(State.NONE)
     }
+
+    protected fun executeDeferredAction(action: () -> Unit) {
+        subject.filter { canBeExecuted(it) }.firstElement().subscribe { action.invoke() }
+    }
+
+    protected open val onExecuteState = State.RESUMED
+
+    private fun canBeExecuted(state: State) = state.ordinal >= onExecuteState.ordinal
 }

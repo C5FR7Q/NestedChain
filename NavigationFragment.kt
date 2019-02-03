@@ -6,11 +6,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import java.util.*
 
 open class NavigationFragment : BaseFragment(), NavigationView {
 
     private val router = Router()
+
+    override val onExecuteState = State.STARTED
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
@@ -26,16 +29,22 @@ open class NavigationFragment : BaseFragment(), NavigationView {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        router.commitPostponed()
+
+    override fun openBaseNavigation() {
+        executeDeferredAction {
+            router.openNavigation()
+        }
     }
 
-    override fun openBaseNavigation(): NavigationView {
-        val baseNavigation = router.postponeBaseNavigation()
+    override fun openBaseNavigation(action: (NavigationView) -> Unit) {
+        executeDeferredAction {
+            router.openNavigation().also { action.invoke(it) }
+        }
+    }
 
-        router.takeIf { started }?.run { commitPostponed() }
-
-        return baseNavigation
+    override fun showToast(text: String) {
+        executeDeferredAction {
+            Toast.makeText(requireContext(), text, Toast.LENGTH_LONG).show()
+        }
     }
 }

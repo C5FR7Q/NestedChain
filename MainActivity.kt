@@ -11,8 +11,15 @@ class MainActivity : AppCompatActivity() {
 
         supportFragmentManager.beginTransaction()
                 .replace(R.id.activity_fragment_container, NavigationFragment().apply {
-                    openBaseNavigation().openBaseNavigation().openBaseNavigation().openBaseNavigation()
-                })
-                .commit()
+                    openBaseNavigation {
+                        openBaseNavigation {
+                            openBaseNavigation {
+                                openBaseNavigation {
+                                    showToast("Hi)")
+                                }
+                            }
+                        }
+                    }
+                }).commit()
     }
 }

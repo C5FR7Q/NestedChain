@@ -26,7 +26,13 @@ class Router {
 
     }
 
-    private fun changeFragment(transactionInfo: TransactionInfo) {
+    fun openNavigation(): NavigationFragment {
+        val fragment = NavigationFragment()
+        changeFragment(TransactionInfo(fragment, fragment.javaClass.name, false))
+        return fragment
+    }
+
+    fun changeFragment(transactionInfo: TransactionInfo) {
         fragmentManager.beginTransaction()
                 .apply {
                     if (transactionInfo.saveToBackStack) {
